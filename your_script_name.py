@@ -3,7 +3,7 @@ import google.generativeai as genai
 from github import Github
 
 # Retrieve secrets from environment variables
-GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")  # GitHub token from secret
+GITHUB_TOKEN = os.getenv("GITUB_TOKEN")  # GitHub token from secret
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")  # Gemini API Key from secret
 
 # Configure Gemini API
