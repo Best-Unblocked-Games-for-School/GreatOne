@@ -1,0 +1,30 @@
+name: Update Organization READMEs
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"  # Run every 10 minutes
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  update-readmes:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.9
+
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install google-generativeai PyGithub
+
+    - name: Run Script
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITUB_TOKEN }}
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      run: python your_script_name.py  # Replace with your script filename
