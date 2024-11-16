@@ -30,7 +30,6 @@ def format_content_with_structure(org_name, content):
         else:
             formatted_content += f"{paragraph}\n\n"
 
-
     return formatted_content
 
 # Function to generate content using Google Gemini API
@@ -38,7 +37,7 @@ def generate_readme_content(org_name):
     try:
         prompt = (
             f"Write a comprehensive article about '{org_name}'. Make sure you first address with a welcoming tone and try to be conversational like a 14-year-old child. "
-            "Highlight its purpose, mission, and what makes it unique. Include headings, subheadings, bullet points, and quotes. Make it engaging and informative, Must be more than 2500 words."
+            "Highlight its purpose, mission, and what makes it unique. Include headings, subheadings, bullet points, and quotes. Make it engaging and informative, must be more than 2500 words."
         )
         response = genai.GenerativeModel("gemini-1.5-flash").generate_content(prompt)
         return format_content_with_structure(org_name, response.text)
@@ -46,8 +45,8 @@ def generate_readme_content(org_name):
         print(f"Error generating README content for '{org_name}': {e}")
         return None
 
-# Function to check if a README.md file exists in a repository
-def readme_exists(repo, path="README.md"):
+# Function to check if a file exists in a repository
+def file_exists(repo, path="README.md"):
     try:
         repo.get_contents(path)
         return True
@@ -63,12 +62,12 @@ def setup_readme_for_organizations():
             org_name = org.login
             org_repos = org.get_repos()
 
+            # Check if main repo with org name exists, create README if missing
             repo_exists = any(repo.name == org_name for repo in org_repos)
-
             if repo_exists:
                 print(f"Repository '{org_name}' already exists.")
                 repo = org.get_repo(org_name)
-                if readme_exists(repo):
+                if file_exists(repo):
                     print(f"README.md already exists for '{org_name}', skipping.")
                     continue
                 else:
@@ -81,11 +80,32 @@ def setup_readme_for_organizations():
                 print(f"Repository '{org_name}' does not exist. Creating...")
                 repo = org.create_repo(name=org_name)
                 print(f"Repository '{org_name}' created.")
-
                 readme_content = generate_readme_content(org_name)
                 if readme_content:
                     repo.create_file("README.md", "Add organization profile README", readme_content)
                     print(f"README.md created for '{org_name}'.")
+
+            # Ensure `.github` repository and add profile/README.md
+            github_repo_name = ".github"
+            github_repo = None
+
+            if not any(repo.name == github_repo_name for repo in org_repos):
+                print(f"Creating '.github' repository for organization '{org_name}'.")
+                github_repo = org.create_repo(name=github_repo_name)
+            else:
+                github_repo = org.get_repo(github_repo_name)
+
+            # Check if profile/README.md exists in `.github` repository
+            if not file_exists(github_repo, "profile/README.md"):
+                print(f"Adding profile README for '.github' repository in organization '{org_name}'.")
+                readme_content = generate_readme_content(org_name)
+                if readme_content:
+                    github_repo.create_file(
+                        "profile/README.md",
+                        "Add organization profile README",
+                        readme_content
+                    )
+                    print(f"profile/README.md added for organization '{org_name}'.")
 
         except Exception as e:
             print(f"Error processing organization '{org_name}': {e}")
