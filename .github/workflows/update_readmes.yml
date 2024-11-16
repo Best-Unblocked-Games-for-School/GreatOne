@@ -25,6 +25,6 @@ jobs:
 
     - name: Run Script
       env:
-        GITHUB_TOKEN: ${{ secrets.GITUB_TOKEN }}
+        PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
         GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       run: python your_script_name.py  # Replace with your script filename
